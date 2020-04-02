@@ -16,37 +16,32 @@
  */
 package com.alibaba.boot.nacos.sample;
 
-import static org.springframework.core.env.StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME;
-import static org.springframework.core.env.StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME;
+import com.alibaba.nacos.api.annotation.NacosInjected;
+import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.config.annotation.NacosValue;
+import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.alibaba.nacos.api.annotation.NacosInjected;
-import com.alibaba.nacos.api.common.Constants;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.annotation.NacosConfigListener;
-import com.alibaba.nacos.api.config.annotation.NacosValue;
-import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
+import static org.springframework.core.env.StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME;
+import static org.springframework.core.env.StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 @SpringBootApplication
-@NacosPropertySource(
-    name = "custom",
-    dataId = ConfigApplication.DATA_ID,
-    first = true,
-    before = SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME,
-    after = SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME
-)
-@ImportResource("classpath:nacos-property-source.xml")
+@NacosPropertySource(name = "custom", dataId = ConfigApplication.DATA_ID, first = true, before = SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, after = SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME)
+@EnableScheduling
 public class ConfigApplication {
 
 	public static final String content = "dept: Aliware\ngroup: Alibaba";
@@ -74,13 +69,16 @@ public class ConfigApplication {
 		return new Foo();
 	}
 
-	@NacosConfigListener(
-	    dataId = DATA_ID,
-        timeout = 500
-    )
-	public void onChange(String newContent) throws Exception {
-		Thread.sleep(100);
-		System.out.println("onChange : " + newContent);
+	@Configuration
+	@ConditionalOnProperty(prefix = "people", name = "enable", havingValue = "true")
+	protected static class People {
+
+		@Bean
+		public Object object() {
+			System.err.println("[liaochuntao] : " + this.getClass().getCanonicalName());
+			return new Object();
+		}
+
 	}
 
 	public static class FirstCommandLineRunner implements CommandLineRunner {

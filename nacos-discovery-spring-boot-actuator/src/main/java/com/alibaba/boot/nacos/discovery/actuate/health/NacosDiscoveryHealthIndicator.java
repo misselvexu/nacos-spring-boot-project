@@ -18,17 +18,18 @@ package com.alibaba.boot.nacos.discovery.actuate.health;
 
 import java.util.Properties;
 
+import com.alibaba.boot.nacos.common.PropertiesUtils;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.spring.factory.CacheableEventPublishingNacosServiceFactory;
+import com.alibaba.nacos.spring.factory.NacosServiceFactory;
+import com.alibaba.nacos.spring.metadata.NacosServiceMetaData;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.context.ApplicationContext;
-
-import com.alibaba.boot.nacos.common.PropertiesUtils;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.spring.factory.CacheableEventPublishingNacosServiceFactory;
-import com.alibaba.nacos.spring.metadata.NacosServiceMetaData;
 
 /**
  * Nacos Discovery {@link HealthIndicator}
@@ -46,11 +47,9 @@ public class NacosDiscoveryHealthIndicator extends AbstractHealthIndicator {
 	@Override
 	protected void doHealthCheck(Health.Builder builder) throws Exception {
 		builder.up();
-		CacheableEventPublishingNacosServiceFactory cacheableEventPublishingNacosServiceFactory = applicationContext
-				.getBean(CacheableEventPublishingNacosServiceFactory.BEAN_NAME,
-						CacheableEventPublishingNacosServiceFactory.class);
-		for (NamingService namingService : cacheableEventPublishingNacosServiceFactory
-				.getNamingServices()) {
+		NacosServiceFactory nacosServiceFactory = CacheableEventPublishingNacosServiceFactory
+				.getSingleton();
+		for (NamingService namingService : nacosServiceFactory.getNamingServices()) {
 			if (namingService instanceof NacosServiceMetaData) {
 				NacosServiceMetaData nacosServiceMetaData = (NacosServiceMetaData) namingService;
 				Properties properties = nacosServiceMetaData.getProperties();
@@ -59,7 +58,7 @@ public class NacosDiscoveryHealthIndicator extends AbstractHealthIndicator {
 								PropertiesUtils.extractSafeProperties(properties)),
 						namingService.getServerStatus());
 			}
-			if (!namingService.getServerStatus().toLowerCase().equals(UP_STATUS)) {
+			if (!namingService.getServerStatus().equalsIgnoreCase(UP_STATUS)) {
 				builder.down();
 			}
 		}

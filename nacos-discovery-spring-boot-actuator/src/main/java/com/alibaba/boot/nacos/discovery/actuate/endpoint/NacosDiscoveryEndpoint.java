@@ -16,26 +16,25 @@
  */
 package com.alibaba.boot.nacos.discovery.actuate.endpoint;
 
-import static com.alibaba.nacos.spring.util.NacosBeanUtils.DISCOVERY_GLOBAL_NACOS_PROPERTIES_BEAN_NAME;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import com.alibaba.boot.nacos.common.PropertiesUtils;
+import com.alibaba.boot.nacos.discovery.NacosDiscoveryConstants;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.spring.factory.CacheableEventPublishingNacosServiceFactory;
+import com.alibaba.nacos.spring.factory.NacosServiceFactory;
+import com.alibaba.nacos.spring.util.NacosUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.context.ApplicationContext;
 
-import com.alibaba.boot.nacos.common.PropertiesUtils;
-import com.alibaba.boot.nacos.discovery.NacosDiscoveryConstants;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.spring.factory.CacheableEventPublishingNacosServiceFactory;
-import com.alibaba.nacos.spring.factory.NacosServiceFactory;
-import com.alibaba.nacos.spring.util.NacosUtils;
+import static com.alibaba.nacos.spring.util.NacosBeanUtils.DISCOVERY_GLOBAL_NACOS_PROPERTIES_BEAN_NAME;
 
 /**
  * Actuator {@link Endpoint} to expose Nacos Discovery Meta Data
@@ -53,15 +52,14 @@ public class NacosDiscoveryEndpoint {
 
 	@ReadOperation
 	public Map<String, Object> invoke() {
-		Map<String, Object> result = new HashMap<>();
+		Map<String, Object> result = new HashMap<>(8);
 
 		result.put("nacosDiscoveryGlobalProperties",
 				PropertiesUtils.extractSafeProperties(applicationContext.getBean(
 						DISCOVERY_GLOBAL_NACOS_PROPERTIES_BEAN_NAME, Properties.class)));
 
-		NacosServiceFactory nacosServiceFactory = applicationContext.getBean(
-				CacheableEventPublishingNacosServiceFactory.BEAN_NAME,
-				NacosServiceFactory.class);
+		NacosServiceFactory nacosServiceFactory = CacheableEventPublishingNacosServiceFactory
+				.getSingleton();
 
 		JSONArray array = new JSONArray();
 		for (NamingService namingService : nacosServiceFactory.getNamingServices()) {
@@ -72,9 +70,9 @@ public class NacosDiscoveryEndpoint {
 				jsonObject.put("subscribeServices", namingService.getSubscribeServices());
 				array.add(jsonObject);
 			}
-			catch (NacosException e) {
+			catch (Exception e) {
 				jsonObject.put("serverStatus", namingService.getServerStatus() + ": "
-						+ e.getErrCode() + NacosUtils.SEPARATOR + e.getErrMsg());
+						+ NacosUtils.SEPARATOR + e.getMessage());
 			}
 		}
 

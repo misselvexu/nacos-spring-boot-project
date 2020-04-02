@@ -17,7 +17,9 @@
 package com.alibaba.boot.nacos.discovery.properties;
 
 import com.alibaba.boot.nacos.discovery.NacosDiscoveryConstants;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.Assert;
 
 /**
@@ -28,9 +30,9 @@ import org.springframework.util.Assert;
 @ConfigurationProperties(NacosDiscoveryConstants.PREFIX)
 public class NacosDiscoveryProperties {
 
-	private String serverAddr;
+	private String serverAddr = "127.0.0.1:8848";
 
-    private String contextPath;
+	private String contextPath;
 
 	private String clusterName;
 
@@ -42,60 +44,101 @@ public class NacosDiscoveryProperties {
 
 	private String secretKey;
 
-    public String getServerAddr() {
-        return serverAddr;
-    }
+	private boolean autoRegister = false;
 
-    public void setServerAddr(String serverAddr) {
-        Assert.notNull(serverAddr, "nacos discovery server-addr must not be null");
-        this.serverAddr = serverAddr;
-    }
+	@NestedConfigurationProperty
+	private Register register = new Register();
 
-    public String getContextPath() {
-        return contextPath;
-    }
+	private String username;
 
-    public void setContextPath(String contextPath) {
-        this.contextPath = contextPath;
-    }
+	private String password;
 
-    public String getClusterName() {
-        return clusterName;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    public String getEndpoint() {
-        return endpoint;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    public String getNamespace() {
-        return namespace;
-    }
+	public String getServerAddr() {
+		return serverAddr;
+	}
 
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
+	public void setServerAddr(String serverAddr) {
+		Assert.notNull(serverAddr, "nacos discovery server-addr must not be null");
+		this.serverAddr = serverAddr;
+	}
 
-    public String getAccessKey() {
-        return accessKey;
-    }
+	public String getContextPath() {
+		return contextPath;
+	}
 
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
-    }
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
+	}
 
-    public String getSecretKey() {
-        return secretKey;
-    }
+	public String getClusterName() {
+		return clusterName;
+	}
 
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
+	public void setClusterName(String clusterName) {
+		this.clusterName = clusterName;
+	}
+
+	public String getEndpoint() {
+		return endpoint;
+	}
+
+	public void setEndpoint(String endpoint) {
+		this.endpoint = endpoint;
+	}
+
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+
+	public String getAccessKey() {
+		return accessKey;
+	}
+
+	public void setAccessKey(String accessKey) {
+		this.accessKey = accessKey;
+	}
+
+	public String getSecretKey() {
+		return secretKey;
+	}
+
+	public void setSecretKey(String secretKey) {
+		this.secretKey = secretKey;
+	}
+
+	public boolean isAutoRegister() {
+		return autoRegister;
+	}
+
+	public void setAutoRegister(boolean autoRegister) {
+		this.autoRegister = autoRegister;
+	}
+
+	public Register getRegister() {
+		return register;
+	}
+
+	public void setRegister(Register register) {
+		this.register = register;
+	}
 }
